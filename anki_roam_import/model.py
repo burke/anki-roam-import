@@ -11,6 +11,10 @@ class RoamBlock:
     parts: List['RoamPart']
     source: str
     uid: str
+    page_id: str
+    page_title: str
+    created: str
+    updated: str
 
 
 RoamPart = Union[
@@ -62,8 +66,12 @@ class RoamCurlyCommand:
 
 @dataclass
 class AnkiNote:
-    content: str
-    roam_content: str
-    source: str
-    block_id: str
-    graph: str
+    text: str
+    roam_text: str
+    roam_source: str
+    roam_graph: str
+    roam_page_title: str
+    roam_page_id: str
+    roam_block_id: str
+    roam_block_created: str
+    roam_block_updated: str

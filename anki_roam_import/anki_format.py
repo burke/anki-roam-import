@@ -23,9 +23,15 @@ class AnkiNoteMaker:
     def __call__(self, roam_block: RoamBlock, graph: Optional[str]) -> AnkiNote:
         numbered_parts = self.cloze_enumerator(roam_block.parts)
         anki_content = self.roam_parts_formatter(numbered_parts)
-        source_html = self.html_formatter(roam_block.source)
+        source_html = self.html_formatter(roam_block.source) if roam_block.source else None
         block_id = roam_block.uid
-        return AnkiNote(anki_content, anki_content, source_html, block_id, graph)
+        page_id = roam_block.page_id
+        page_title = roam_block.page_title
+        block_created = roam_block.created
+        block_updated = roam_block.updated
+        return AnkiNote(
+                anki_content, anki_content, source_html, graph, page_title,
+                page_id, block_id, block_created, block_updated)
 
 
 class ClozeEnumerator:

@@ -46,34 +46,62 @@ class AnkiModelNotes:
     source_field_index: Optional[int]
     block_id_field_index: Optional[int]
     graph_field_index: Optional[int]
-    roam_content_field_index: Optional[int]
+    roam_text_field_index: Optional[int]
 
     # return: was new note created?
     # TODO(burke) could do tri-state here: NEW, UPDATE, NONE
-    def add_or_update_note(self, note: AnkiNote, existing_block_ids: Dict[str, int]) -> bool:
-        if note.block_id in existing_block_ids:
-            note_id = existing_block_ids[note.block_id]
+    def add_or_update_note(self, note: AnkiNote, config: JsonData, existing_block_ids: Dict[str, int]) -> bool:
+        if note.roam_block_id in existing_block_ids:
+            note_id = existing_block_ids[note.roam_block_id]
             existing_note = self.collection.getNote(note_id)
             updated = False
 
-            if existing_note["Text"] != note.content:
-                if existing_note["Text"] == existing_note["RoamText"]:
+            f_text = config["fields.text"]
+            f_roam_text = config["fields.roam.text"]
+            f_roam_source = config["fields.roam.source"]
+            f_roam_graph = config["fields.roam.graph"]
+            f_roam_page_title = config["fields.roam.page.title"]
+            f_roam_page_id = config["fields.roam.page.id"]
+            f_roam_block_id = config["fields.roam.block.id"]
+            f_roam_block_created = config["fields.roam.block.created"]
+            f_roam_block_updated = config["fields.roam.block.updated"]
+
+            if existing_note[f_text] != note.text:
+                if existing_note[f_text] == existing_note[f_roam_text]:
                     # The note was updated on Roam, but hasn't been changed
                     # manually in Anki. Update it.
-                    existing_note["Text"] = note.content
+                    existing_note[f_text] = note.text
                     updated = True
 
-            if existing_note["Graph"] != note.graph:
-                updated = True
-                existing_note["Graph"] = note.graph
+            l = lambda x: "" if x == None else x
 
-            if existing_note["RoamText"] != note.roam_content:
+            if l(existing_note[f_roam_text]) != l(note.roam_text):
                 updated = True
-                existing_note["RoamText"] = note.roam_content
+                existing_note[f_roam_text] = l(note.roam_text)
 
-            if existing_note["Source"] != note.source:
+            if l(existing_note[f_roam_source]) != l(note.roam_source):
                 updated = True
-                existing_note["Source"] = note.source
+                existing_note[f_roam_source] = l(note.roam_source)
+
+            if l(existing_note[f_roam_graph]) != l(note.roam_graph):
+                updated = True
+                existing_note[f_roam_graph] = l(note.roam_graph)
+
+            if l(existing_note[f_roam_page_id]) != l(note.roam_page_id):
+                updated = True
+                existing_note[f_roam_page_id] = l(note.roam_page_id)
+
+            if l(existing_note[f_roam_page_title]) != l(note.roam_page_title):
+                updated = True
+                existing_note[f_roam_page_title] = l(note.roam_page_title)
+
+            if l(existing_note[f_roam_block_created]) != l(note.roam_block_created):
+                updated = True
+                existing_note[f_roam_block_created] = l(note.roam_block_created)
+
+            if l(existing_note[f_roam_block_updated]) != l(note.roam_block_updated):
+                updated = True
+                existing_note[f_roam_block_updated] = l(note.roam_block_updated)
 
             existing_note.flush()
             return updated
@@ -85,15 +113,15 @@ class AnkiModelNotes:
 
     def _note(self, anki_note: AnkiNote) -> Note:
         note = Note(self.collection, self.model)
-        note.fields[self.content_field_index] = anki_note.content
+        note.fields[self.text_field_index] = anki_note.text
         if self.source_field_index is not None:
             note.fields[self.source_field_index] = anki_note.source
         if self.block_id_field_index is not None:
-            note.fields[self.block_id_field_index] = anki_note.block_id
+            note.fields[self.block_id_field_index] = anki_note.roam_block_id
         if self.graph_field_index is not None:
             note.fields[self.graph_field_index] = anki_note.graph
-        if self.roam_content_field_index is not None:
-            note.fields[self.roam_content_field_index] = anki_note.roam_content
+        if self.roam_text_field_index is not None:
+            note.fields[self.roam_text_field_index] = anki_note.roam_text
         return note
 
     def get_block_ids(self) -> Iterable[str]:
@@ -121,7 +149,7 @@ class AnkiCollection:
         source_field: Optional[str],
         block_id_field: Optional[str],
         graph_field: Optional[str],
-        roam_content_field: Optional[str],
+        roam_text_field: Optional[str],
         deck_name: Optional[str],
     ) -> AnkiModelNotes:
         model = self._get_model(model_name, deck_name)
@@ -144,14 +172,14 @@ class AnkiCollection:
         else:
             graph_field_index = None
 
-        if roam_content_field is not None:
-            roam_content_field_index = field_names.index(roam_content_field)
+        if roam_text_field is not None:
+            roam_text_field_index = field_names.index(roam_text_field)
         else:
-            roam_content_field_index = None
+            roam_text_field_index = None
 
         return AnkiModelNotes(
             self.collection, model, content_field_index, source_field_index,
-            block_id_field_index, graph_field_index, roam_content_field_index)
+            block_id_field_index, graph_field_index, roam_text_field_index)
 
     def _get_model(self, model_name: str, deck_name: Optional[str]) -> NoteType:
         model = deepcopy(self.collection.models.byName(model_name))

@@ -88,8 +88,16 @@ class RoamBlockBuilder:
         if not contains_cloze(parts):
             return None
 
-        source = self.source_builder(block, parents)
-        return RoamBlock(parts, source, uid)
+        source_data = self.source_builder(block, parents)
+
+        source = source_data['source']
+        page_id = source_data['page.id']
+        page_title = source_data['page.title']
+        block_created = source_data['block.created']
+        block_updated = source_data['block.updated']
+
+        return RoamBlock(
+                parts, source, uid, page_id, page_title, block_created, block_updated)
 
 
 def might_contain_cloze(string: str) -> bool:
@@ -219,13 +227,24 @@ def code_inline() -> ParserGenerator[CodeInline]:
 @dataclass
 class SourceBuilder:
     source_finder: 'SourceFinder'
-    source_formatter: 'SourceFormatter'
+    time_formatter: 'TimeFormatter'
 
     def __call__(self, block: JsonData, parents: List[JsonData]) -> str:
         source = self.source_finder(block, parents)
         page = parents[0]
-        return self.source_formatter(block, source, page)
 
+        res = {}
+        res['source'] = source
+        res['page.title'] = page['title']
+        res['page.id'] = None # not available in export currently
+
+        if 'create-time' in block:
+            res['block.created'] = self.time_formatter(block['create-time'])
+
+        if 'edit-time' in block:
+            res['block.updated'] = self.time_formatter(block['edit-time'])
+
+        return res
 
 @dataclass
 class SourceFinder:
@@ -293,32 +312,6 @@ SOURCE_PATTERN = re.compile(
 
 
 @dataclass
-class SourceFormatter:
-    time_formatter: 'TimeFormatter'
-
-    def __call__(
-        self, block: JsonData, source: Optional[str], page: JsonData,
-    ) -> str:
-        title = page['title']
-        formatted_source = f"Note from Roam page '{title}'"
-
-        if 'create-time' in block:
-            create_time = self.time_formatter(block['create-time'])
-            formatted_source += f', created at {create_time}'
-
-        if 'edit-time' in block:
-            edit_time = self.time_formatter(block['edit-time'])
-            formatted_source += f', edited at {edit_time}'
-
-        formatted_source += '.'
-
-        if source is not None:
-            formatted_source = f'{source}\n{formatted_source}'
-
-        return formatted_source
-
-
-@dataclass
 class TimeFormatter:
     time_zone: Optional[dt.tzinfo]
 
@@ -334,6 +327,6 @@ extract_roam_blocks = BlockExtractor(RoamBlockBuilder(
     parse_roam_block,
     SourceBuilder(
         SourceFinder(SourceExtractor()),
-        SourceFormatter(TimeFormatter(time_zone=None)),
+        TimeFormatter(time_zone=None),
     ),
 ))

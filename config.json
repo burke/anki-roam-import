@@ -1,10 +1,19 @@
 {
-    "model_name": "Cloze (Roam)",
-    "content_field": "Text",
-    "roam_content_field": "RoamText",
-    "source_field": "Source",
-    "block_id_field": "BlockID",
-    "graph_field": "Graph",
-    "graph_name": null,
-    "deck_name": null
+    "model.name": "Roam",
+    "graph.name": null,
+    "deck.name": null,
+
+    "fields.text": "Text",
+
+    "fields.roam.source": "RoamSource",
+
+    "fields.roam.text": "RoamText",
+    "fields.roam.graph": "RoamGraph",
+
+    "fields.roam.page.title": "RoamPageTitle",
+    "fields.roam.page.id": "RoamPageID",
+
+    "fields.roam.block.id": "RoamBlockID",
+    "fields.roam.block.created": "RoamBlockCreated",
+    "fields.roam.block.updated": "RoamBlockUpdated"
 }

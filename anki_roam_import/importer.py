@@ -8,7 +8,7 @@ from .anki import (
     AnkiAddonData, AnkiCollection, AnkiModelNotes, is_anki_package_installed,
 )
 from .anki_format import make_anki_note
-from .model import AnkiNote
+from .model import AnkiNote, JsonData
 from .roam import extract_roam_blocks, load_roam_pages
 
 if is_anki_package_installed():
@@ -32,17 +32,17 @@ class AnkiNoteImporter:
         num_notes_ignored = 0
 
         config = self.addon_data.read_config()
-        graph = config['graph_name']
+        graph = config['graph.name']
         model_notes = self.collection.get_model_notes(
-            config['model_name'],
-            config['content_field'],
-            config['source_field'],
-            config['block_id_field'],
-            config['graph_field'],
-            config['roam_content_field'],
-            config['deck_name'],
+            config['model.name'],
+            config['fields.text'],
+            config['fields.roam.source'],
+            config['fields.roam.block.id'],
+            config['fields.roam.graph'],
+            config['fields.roam.text'],
+            config['deck.name'],
         )
-        note_adder = AnkiNoteAdder(model_notes)
+        note_adder = AnkiNoteAdder(model_notes, config)
 
         for roam_note in roam_notes:
             note = make_anki_note(roam_note, graph)
@@ -69,9 +69,11 @@ class AnkiNoteAdder:
     def __init__(
         self,
         model_notes: AnkiModelNotes,
+        config: JsonData,
     ):
         self.model_notes = model_notes
+        self.config = config
         self.existing_block_ids = dict(model_notes.get_block_ids())
 
     def try_add(self, anki_note: AnkiNote) -> bool:
-        return self.model_notes.add_or_update_note(anki_note, self.existing_block_ids)
+        return self.model_notes.add_or_update_note(anki_note, self.config, self.existing_block_ids)
