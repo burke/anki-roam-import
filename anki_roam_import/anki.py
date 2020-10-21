@@ -1,7 +1,7 @@
 import os
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Iterable, Optional
+from typing import Iterable, Optional, Dict
 
 from .model import JsonData, AnkiNote
 
@@ -48,9 +48,40 @@ class AnkiModelNotes:
     graph_field_index: Optional[int]
     roam_content_field_index: Optional[int]
 
-    def add_note(self, anki_note: AnkiNote) -> None:
-        note = self._note(anki_note)
-        self.collection.addNote(note)
+    # return: was new note created?
+    # TODO(burke) could do tri-state here: NEW, UPDATE, NONE
+    def add_or_update_note(self, note: AnkiNote, existing_block_ids: Dict[str, int]) -> bool:
+        if note.block_id in existing_block_ids:
+            note_id = existing_block_ids[note.block_id]
+            existing_note = self.collection.getNote(note_id)
+            updated = False
+
+            if existing_note["Text"] != note.content:
+                if existing_note["Text"] == existing_note["RoamText"]:
+                    # The note was updated on Roam, but hasn't been changed
+                    # manually in Anki. Update it.
+                    existing_note["Text"] = note.content
+                    updated = True
+
+            if existing_note["Graph"] != note.graph:
+                updated = True
+                existing_note["Graph"] = note.graph
+
+            if existing_note["RoamText"] != note.roam_content:
+                updated = True
+                existing_note["RoamText"] = note.roam_content
+
+            if existing_note["Source"] != note.source:
+                updated = True
+                existing_note["Source"] = note.source
+
+            existing_note.flush()
+            return updated
+
+        new_note = self._note(note)
+        self.collection.addNote(new_note)
+        return True
+
 
     def _note(self, anki_note: AnkiNote) -> Note:
         note = Note(self.collection, self.model)
@@ -66,10 +97,10 @@ class AnkiModelNotes:
         return note
 
     def get_block_ids(self) -> Iterable[str]:
-        note_fields = self.collection.db.list(
-            'select flds from notes where mid = ?', self.model['id'])
-        for fields in note_fields:
-            yield splitFields(fields)[self.block_id_field_index]
+        res = self.collection.db.all(
+            'select id, flds from notes where mid = ?', self.model['id'])
+        for (nid, fields) in res:
+            yield splitFields(fields)[self.block_id_field_index], nid
 
 
 @dataclass

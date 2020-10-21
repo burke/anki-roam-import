@@ -71,13 +71,7 @@ class AnkiNoteAdder:
         model_notes: AnkiModelNotes,
     ):
         self.model_notes = model_notes
-        self.existing_block_ids = model_notes.get_block_ids()
+        self.existing_block_ids = dict(model_notes.get_block_ids())
 
     def try_add(self, anki_note: AnkiNote) -> bool:
-        if anki_note.block_id in self.existing_block_ids:
-            # TODO(burke): update note instead of just passing
-            return False
-
-        self.model_notes.add_note(anki_note)
-
-        return True
+        return self.model_notes.add_or_update_note(anki_note, self.existing_block_ids)
