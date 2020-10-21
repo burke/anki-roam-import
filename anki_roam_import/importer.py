@@ -57,7 +57,7 @@ class AnkiNoteImporter:
                 return
 
             if num_notes_added:
-                yield f'{num_notes_added} new notes imported'
+                yield f'{num_notes_added} notes added or updated'
 
             if num_notes_ignored:
                 yield f'{num_notes_ignored} notes were imported before and were not imported again'
