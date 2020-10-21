@@ -25,9 +25,12 @@ class AnkiNoteImporter:
     collection: AnkiCollection
 
     def import_from_path(self, path: str) -> str:
+        config = self.addon_data.read_config()
+
         roam_pages = load_roam_pages(path)
         roam_notes = extract_roam_blocks(roam_pages)
-        notes_to_add = map(make_anki_note, roam_notes)
+        graph = config['graph_name']
+        notes_to_add = map(lambda x: make_anki_note(x, graph), roam_notes)
 
         num_notes_added = 0
         num_notes_ignored = 0
@@ -38,11 +41,13 @@ class AnkiNoteImporter:
         normalized_notes = NormalizedNotes()
         normalized_notes.update(added_notes_file.read())
 
-        config = self.addon_data.read_config()
         model_notes = self.collection.get_model_notes(
             config['model_name'],
             config['content_field'],
             config['source_field'],
+            config['block_id_field'],
+            config['graph_field'],
+            config['roam_content_field'],
             config['deck_name'],
         )
         note_adder = AnkiNoteAdder(model_notes, added_notes, normalized_notes)

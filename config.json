@@ -1,6 +1,10 @@
 {
     "model_name": "Cloze",
     "content_field": "Text",
+    "roam_content_field": null,
     "source_field": null,
+    "block_id_field": null,
+    "graph_field": null,
+    "graph_name": null,
     "deck_name": null
 }

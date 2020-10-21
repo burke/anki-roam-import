@@ -20,11 +20,12 @@ class AnkiNoteMaker:
     roam_parts_formatter: Formatter[Iterable[RoamPart]]
     html_formatter: Formatter[str]
 
-    def __call__(self, roam_block: RoamBlock) -> AnkiNote:
+    def __call__(self, roam_block: RoamBlock, graph: Optional[str]) -> AnkiNote:
         numbered_parts = self.cloze_enumerator(roam_block.parts)
         anki_content = self.roam_parts_formatter(numbered_parts)
         source_html = self.html_formatter(roam_block.source)
-        return AnkiNote(anki_content, source_html)
+        block_id = roam_block.uid
+        return AnkiNote(anki_content, anki_content, source_html, block_id, graph)
 
 
 class ClozeEnumerator:

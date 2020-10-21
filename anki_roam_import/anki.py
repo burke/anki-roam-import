@@ -44,6 +44,9 @@ class AnkiModelNotes:
     model: NoteType
     content_field_index: int
     source_field_index: Optional[int]
+    block_id_field_index: Optional[int]
+    graph_field_index: Optional[int]
+    roam_content_field_index: Optional[int]
 
     def add_note(self, anki_note: AnkiNote) -> None:
         note = self._note(anki_note)
@@ -54,6 +57,12 @@ class AnkiModelNotes:
         note.fields[self.content_field_index] = anki_note.content
         if self.source_field_index is not None:
             note.fields[self.source_field_index] = anki_note.source
+        if self.block_id_field_index is not None:
+            note.fields[self.block_id_field_index] = anki_note.block_id
+        if self.graph_field_index is not None:
+            note.fields[self.graph_field_index] = anki_note.graph
+        if self.roam_content_field_index is not None:
+            note.fields[self.roam_content_field_index] = anki_note.roam_content
         return note
 
     def get_notes(self) -> Iterable[str]:
@@ -87,6 +96,9 @@ class AnkiCollection:
         model_name: str,
         content_field: str,
         source_field: Optional[str],
+        block_id_field: Optional[str],
+        graph_field: Optional[str],
+        roam_content_field: Optional[str],
         deck_name: Optional[str],
     ) -> AnkiModelNotes:
         model = self._get_model(model_name, deck_name)
@@ -99,8 +111,24 @@ class AnkiCollection:
         else:
             source_field_index = None
 
+        if block_id_field is not None:
+            block_id_field_index = field_names.index(block_id_field)
+        else:
+            block_id_field_index = None
+
+        if graph_field is not None:
+            graph_field_index = field_names.index(graph_field)
+        else:
+            graph_field_index = None
+
+        if roam_content_field is not None:
+            roam_content_field_index = field_names.index(roam_content_field)
+        else:
+            roam_content_field_index = None
+
         return AnkiModelNotes(
-            self.collection, model, content_field_index, source_field_index)
+            self.collection, model, content_field_index, source_field_index,
+            block_id_field_index, graph_field_index, roam_content_field_index)
 
     def _get_model(self, model_name: str, deck_name: Optional[str]) -> NoteType:
         model = deepcopy(self.collection.models.byName(model_name))

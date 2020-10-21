@@ -78,6 +78,7 @@ class RoamBlockBuilder:
         self, block: JsonData, parents: List[JsonData],
     ) -> Optional[RoamBlock]:
         string = block['string']
+        uid = block['uid']
 
         if not might_contain_cloze(string):
             return None
@@ -88,7 +89,7 @@ class RoamBlockBuilder:
             return None
 
         source = self.source_builder(block, parents)
-        return RoamBlock(parts, source)
+        return RoamBlock(parts, source, uid)
 
 
 def might_contain_cloze(string: str) -> bool:

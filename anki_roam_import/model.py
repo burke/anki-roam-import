@@ -10,6 +10,7 @@ JsonData = Any
 class RoamBlock:
     parts: List['RoamPart']
     source: str
+    uid: str
 
 
 RoamPart = Union[
@@ -62,4 +63,7 @@ class RoamCurlyCommand:
 @dataclass
 class AnkiNote:
     content: str
+    roam_content: str
     source: str
+    block_id: str
+    graph: str
