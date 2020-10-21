@@ -33,6 +33,10 @@ def roam_json_file(tmp_path_factory) -> JsonFile:
 MODEL_NAME = 'model name'
 CONTENT_FIELD = 'content field name'
 SOURCE_FIELD = 'source field name'
+BLOCK_ID_FIELD = 'block id field name'
+ROAM_CONTENT_FIELD = 'roam content field name'
+GRAPH_FIELD = 'graph field name'
+SOURCE_FIELD = 'source field name'
 DECK_NAME = 'deck name'
 
 
@@ -44,11 +48,11 @@ def addon_data(tmp_path_factory) -> AnkiAddonData:
         'model_name': MODEL_NAME,
         'content_field': CONTENT_FIELD,
         'source_field': SOURCE_FIELD,
+        'block_id_field': BLOCK_ID_FIELD,
+        'graph_field': GRAPH_FIELD,
+        'roam_content_field': ROAM_CONTENT_FIELD,
         'deck_name': DECK_NAME,
     }
-
-    user_files_path = tmp_path_factory.mktemp('user_files')
-    anki_addon_data.user_files_path.return_value = str(user_files_path)
 
     return anki_addon_data
 

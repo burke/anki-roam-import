@@ -65,11 +65,11 @@ class AnkiModelNotes:
             note.fields[self.roam_content_field_index] = anki_note.roam_content
         return note
 
-    def get_notes(self) -> Iterable[str]:
+    def get_block_ids(self) -> Iterable[str]:
         note_fields = self.collection.db.list(
             'select flds from notes where mid = ?', self.model['id'])
         for fields in note_fields:
-            yield splitFields(fields)[self.content_field_index]
+            yield splitFields(fields)[self.block_id_field_index]
 
 
 @dataclass
@@ -78,14 +78,6 @@ class AnkiAddonData:
 
     def read_config(self) -> JsonData:
         return self.anki_qt.addonManager.getConfig(__name__)
-
-    def user_files_path(self) -> str:
-        module_name = __name__.split('.')[0]
-        addons_directory = self.anki_qt.addonManager.addonsFolder(module_name)
-        user_files_path = os.path.join(addons_directory, 'user_files')
-        os.makedirs(user_files_path, exist_ok=True)
-        return user_files_path
-
 
 @dataclass
 class AnkiCollection:
