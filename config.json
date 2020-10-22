@@ -3,6 +3,8 @@
     "graph.name": null,
     "deck.name": null,
 
+    "file.path": null,
+
     "fields.text": "Text",
 
     "fields.roam.source": "RoamSource",

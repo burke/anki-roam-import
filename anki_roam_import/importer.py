@@ -33,15 +33,7 @@ class AnkiNoteImporter:
 
         config = self.addon_data.read_config()
         graph = config['graph.name']
-        model_notes = self.collection.get_model_notes(
-            config['model.name'],
-            config['fields.text'],
-            config['fields.roam.source'],
-            config['fields.roam.block.id'],
-            config['fields.roam.graph'],
-            config['fields.roam.text'],
-            config['deck.name'],
-        )
+        model_notes = self.collection.get_model_notes(config)
         note_adder = AnkiNoteAdder(model_notes, config)
 
         for roam_note in roam_notes:

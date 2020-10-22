@@ -13,13 +13,16 @@ def main():
 
 
 def import_roam_notes_into_anki():
-    path = getFile(
-        mw,
-        'Open Roam export',
-        cb=None,
-        filter='Roam JSON export (*.zip *.json)',
-        key='RoamExport',
-    )
+    config = AnkiAddonData(mw).read_config()
+    path = config['file.path']
+    if path is None:
+        path = getFile(
+            mw,
+            'Open Roam export',
+            cb=None,
+            filter='Roam JSON export (*.zip *.json)',
+            key='RoamExport',
+        )
 
     if not path:
         return
